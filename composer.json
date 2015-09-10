@@ -1,0 +1,53 @@
+{
+    "name": "shutterstock/phergie-irc-plugin-react-bigstock",
+    "description": "Phergie plugin for Use Bigstock API to search for and display images",
+    "keywords": [ "phergie", "irc", "bot", "plugin" ],
+    "license": "BSD-2-Clause",
+    "authors": [
+        {
+            "name": "Patrick Schwisow",
+            "email": "patrick.schwisow@gmail.com",
+            "homepage": "http://www.bigstockphoto.com",
+            "role": "Developer"
+        },
+        {
+            "name": "Jacob Emerick",
+            "email": "jpemeric@gmail.com",
+            "homepage": "http://www.bigstockphoto.com",
+            "role": "Developer"
+        }
+    ],
+    "support": {
+        "email": "patrick.schwisow@gmail.com",
+        "irc": "irc://irc.freenode.net/phergie",
+        "issues": "https://github.com/shutterstock/phergie-irc-plugin-react-bigstock/issues",
+        "source": "https://github.com/shutterstock/phergie-irc-plugin-react-bigstock"
+    },
+    "require": {
+        "phergie/phergie-irc-bot-react": "~1",
+        "phergie/phergie-irc-plugin-react-command": "~1.0"
+
+    },
+    "require-dev": {
+        "phpunit/phpunit": "4.5.*",
+        "phake/phake": "2.0.0-beta2"
+    },
+    "suggest": {
+        "phergie/phergie-irc-plugin-react-commandhelp": "provides interactive help for commands"
+    },
+    "autoload": {
+        "psr-4": {
+            "Shutterstock\\Phergie\\Plugin\\Bigstock\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Shutterstock\\Phergie\\Tests\\Plugin\\Bigstock\\": "tests"
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0-dev"
+        }
+    }
+}
