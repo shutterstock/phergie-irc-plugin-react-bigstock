@@ -37,24 +37,62 @@ class Plugin extends AbstractPlugin
     }
 
     /**
-     *
+     * Subscribe to events
      *
      * @return array
      */
     public function getSubscribedEvents()
     {
         return [
-            'command.' => 'handleCommand',
+            'command.bigstock' => 'handleBigstockCommand',
+            'command.bigstock.help' => 'handleBigstockHelp',
         ];
     }
 
     /**
-     *
+     * Command to search Bigstock
      *
      * @param \Phergie\Irc\Plugin\React\Command\CommandEvent $event
      * @param \Phergie\Irc\Bot\React\EventQueueInterface $queue
      */
-    public function handleCommand(Event $event, Queue $queue)
+    public function handleBigstockCommand(Event $event, Queue $queue)
     {
+        $params = $event->getCustomParams();
+        if (count($params) < 1) {
+            $this->handleBigstockHelp($event, $queue);
+        } else {
+            // this is where we need to fire off the request
+        }
+    }
+
+    /**
+     * Bigstock Command Help
+     *
+     * @param \Phergie\Irc\Plugin\React\Command\CommandEvent $event
+     * @param \Phergie\Irc\Bot\React\EventQueueInterface $queue
+     */
+    public function handleBigstockHelp(Event $event, Queue $queue)
+    {
+        $this->sendHelpReply($event, $queue, array(
+            'Usage: bigstock queryString',
+            'queryString - the search query (all words are assumed to be part of message)',
+            'Searches bigstock for an image based on the provided query string.',
+        ));
+    }
+
+    /**
+     * Responds to a help command.
+     *
+     * @param \Phergie\Irc\Plugin\React\Command\CommandEvent $event
+     * @param \Phergie\Irc\Bot\React\EventQueueInterface $queue
+     * @param array $messages
+     */
+    protected function sendHelpReply(Event $event, Queue $queue, array $messages)
+    {
+        $method = 'irc' . $event->getCommand();
+        $target = $event->getSource();
+        foreach ($messages as $message) {
+            $queue->$method($target, $message);
+        }
     }
 }
