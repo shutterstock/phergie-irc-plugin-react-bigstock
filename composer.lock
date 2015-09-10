@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "d6101c2ed428167346b9f1bf5b44eac1",
+    "hash": "6c2f26c046f61ff3e1a4446be1e39179",
     "packages": [
         {
             "name": "evenement/evenement",
@@ -51,6 +51,64 @@
                 "event-emitter"
             ],
             "time": "2012-11-02 14:49:47"
+        },
+        {
+            "name": "guzzlehttp/psr7",
+            "version": "1.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/guzzle/psr7.git",
+                "reference": "4ef919b0cf3b1989523138b60163bbcb7ba1ff7e"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/guzzle/psr7/zipball/4ef919b0cf3b1989523138b60163bbcb7ba1ff7e",
+                "reference": "4ef919b0cf3b1989523138b60163bbcb7ba1ff7e",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.4.0",
+                "psr/http-message": "~1.0"
+            },
+            "provide": {
+                "psr/http-message-implementation": "1.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "~4.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.0-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "GuzzleHttp\\Psr7\\": "src/"
+                },
+                "files": [
+                    "src/functions_include.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Michael Dowling",
+                    "email": "mtdowling@gmail.com",
+                    "homepage": "https://github.com/mtdowling"
+                }
+            ],
+            "description": "PSR-7 message implementation",
+            "keywords": [
+                "http",
+                "message",
+                "stream",
+                "uri"
+            ],
+            "time": "2015-08-15 19:32:36"
         },
         {
             "name": "monolog/monolog",
@@ -127,6 +185,69 @@
                 "psr-3"
             ],
             "time": "2015-08-31 09:17:37"
+        },
+        {
+            "name": "nojimage/twitter-text-php",
+            "version": "1.1.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/nojimage/twitter-text-php.git",
+                "reference": "2cf4d681f7cbe0a564fb8f32c423b35b85baae20"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/nojimage/twitter-text-php/zipball/2cf4d681f7cbe0a564fb8f32c423b35b85baae20",
+                "reference": "2cf4d681f7cbe0a564fb8f32c423b35b85baae20",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.2.8"
+            },
+            "require-dev": {
+                "php": ">=5.3.3",
+                "symfony/yaml": "*",
+                "twitter/twitter-text-conformance": "1.8.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Twitter_": "lib/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "Matt Sanford",
+                    "email": "matt@mzsanford.com",
+                    "homepage": "http://mzsanford.com"
+                },
+                {
+                    "name": "Mike Cochrane",
+                    "email": "mikec@mikenz.geek.nz",
+                    "homepage": "http://mikenz.geek.nz"
+                },
+                {
+                    "name": "Nick Pope",
+                    "email": "git@nickpope.me.uk",
+                    "homepage": "http://www.nickpope.me.uk"
+                },
+                {
+                    "name": "Takashi Nojima",
+                    "homepage": "http://php-tips.com"
+                }
+            ],
+            "description": "A library of PHP classes that provide auto-linking and extraction of usernames, lists, hashtags and URLs from tweets.",
+            "homepage": "https://github.com/nojimage/twitter-text-php",
+            "keywords": [
+                "autolink",
+                "extract",
+                "text",
+                "twitter"
+            ],
+            "time": "2014-02-28 15:18:45"
         },
         {
             "name": "phergie/phergie-irc-bot-react",
@@ -429,6 +550,55 @@
             "time": "2014-12-15 02:26:15"
         },
         {
+            "name": "psr/http-message",
+            "version": "1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-fig/http-message.git",
+                "reference": "85d63699f0dbedb190bbd4b0d2b9dc707ea4c298"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-fig/http-message/zipball/85d63699f0dbedb190bbd4b0d2b9dc707ea4c298",
+                "reference": "85d63699f0dbedb190bbd4b0d2b9dc707ea4c298",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Psr\\Http\\Message\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PHP-FIG",
+                    "homepage": "http://www.php-fig.org/"
+                }
+            ],
+            "description": "Common interface for HTTP messages",
+            "keywords": [
+                "http",
+                "http-message",
+                "psr",
+                "psr-7",
+                "request",
+                "response"
+            ],
+            "time": "2015-05-04 20:22:00"
+        },
+        {
             "name": "psr/log",
             "version": "1.0.0",
             "source": {
@@ -589,6 +759,50 @@
                 "event-loop"
             ],
             "time": "2014-02-26 17:36:58"
+        },
+        {
+            "name": "react/http-client",
+            "version": "v0.4.5",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/reactphp/http-client.git",
+                "reference": "dcb69238f6936f581845a8dfc31bf2ccec6acdd9"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/reactphp/http-client/zipball/dcb69238f6936f581845a8dfc31bf2ccec6acdd9",
+                "reference": "dcb69238f6936f581845a8dfc31bf2ccec6acdd9",
+                "shasum": ""
+            },
+            "require": {
+                "evenement/evenement": "~2.0",
+                "guzzlehttp/psr7": "^1.0",
+                "php": ">=5.4.0",
+                "react/dns": "0.4.*",
+                "react/event-loop": "0.4.*",
+                "react/socket-client": "0.4.*",
+                "react/stream": "0.4.*"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "0.5-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "React\\HttpClient\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "Asynchronous HTTP client library.",
+            "keywords": [
+                "http"
+            ],
+            "time": "2015-08-31 10:25:54"
         },
         {
             "name": "react/promise",
@@ -764,6 +978,147 @@
                 "stream"
             ],
             "time": "2014-09-10 03:32:31"
+        },
+        {
+            "name": "wyrihaximus/phergie-dns",
+            "version": "2.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/WyriHaximus/PhergieDns.git",
+                "reference": "579a601a5caac793f7f68453a4fde6085e3ac2ad"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/WyriHaximus/PhergieDns/zipball/579a601a5caac793f7f68453a4fde6085e3ac2ad",
+                "reference": "579a601a5caac793f7f68453a4fde6085e3ac2ad",
+                "shasum": ""
+            },
+            "require": {
+                "phergie/phergie-irc-bot-react": "~1.0",
+                "php": ">=5.4.0",
+                "react/dns": "0.4.*"
+            },
+            "require-dev": {
+                "phake/phake": "~1.0",
+                "phergie/phergie-irc-plugin-react-command": "~1.0",
+                "phpunit/phpunit": "~4.0",
+                "vectorface/dunit": "dev-master"
+            },
+            "suggest": {
+                "phergie/phergie-irc-plugin-react-command": "Required if you want to make use of the command support"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "WyriHaximus\\Phergie\\Plugin\\Dns\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "Phergie plugin for Looking up IP's by hostnames",
+            "keywords": [
+                "bot",
+                "irc",
+                "phergie",
+                "phergieplugin",
+                "plugin",
+                "react"
+            ],
+            "time": "2014-12-25 15:21:02"
+        },
+        {
+            "name": "wyrihaximus/phergie-http",
+            "version": "2.1.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/WyriHaximus/PhergieHttp.git",
+                "reference": "26a89d7c927e3518520de5ad1766efb7a3edfbc7"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/WyriHaximus/PhergieHttp/zipball/26a89d7c927e3518520de5ad1766efb7a3edfbc7",
+                "reference": "26a89d7c927e3518520de5ad1766efb7a3edfbc7",
+                "shasum": ""
+            },
+            "require": {
+                "phergie/phergie-irc-bot-react": "~1.0",
+                "php": ">=5.4.0",
+                "react/http-client": "0.4.*",
+                "wyrihaximus/phergie-dns": "~2.1"
+            },
+            "require-dev": {
+                "phake/phake": "~1.0",
+                "phpunit/phpunit": "~4.0",
+                "vectorface/dunit": "dev-master"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "WyriHaximus\\Phergie\\Plugin\\Http\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "Phergie plugin for Provide HTTP functionality to other plugins",
+            "keywords": [
+                "bot",
+                "irc",
+                "phergie",
+                "phergieplugin",
+                "plugin",
+                "react"
+            ],
+            "time": "2015-02-20 09:26:00"
+        },
+        {
+            "name": "wyrihaximus/phergie-url",
+            "version": "1.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/WyriHaximus/PhergieUrl.git",
+                "reference": "a9124f42fd23b862d0a9a6030cd8497ae176be0b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/WyriHaximus/PhergieUrl/zipball/a9124f42fd23b862d0a9a6030cd8497ae176be0b",
+                "reference": "a9124f42fd23b862d0a9a6030cd8497ae176be0b",
+                "shasum": ""
+            },
+            "require": {
+                "nojimage/twitter-text-php": "1.1.1",
+                "phergie/phergie-irc-bot-react": "~1.0",
+                "php": ">=5.4.0",
+                "react/promise": "~1.0|~2.0",
+                "wyrihaximus/phergie-http": "~1.0|~2.0"
+            },
+            "require-dev": {
+                "phake/phake": "~1.0",
+                "phpunit/phpunit": "~4.0",
+                "squizlabs/php_codesniffer": "~1.0",
+                "vectorface/dunit": "~2.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "WyriHaximus\\Phergie\\Plugin\\Url\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "Phergie plugin for Display URL information about links",
+            "keywords": [
+                "bot",
+                "irc",
+                "plugin",
+                "react"
+            ],
+            "time": "2015-04-24 15:42:51"
         }
     ],
     "packages-dev": [

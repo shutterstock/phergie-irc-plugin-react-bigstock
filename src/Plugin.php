@@ -13,6 +13,8 @@ namespace Shutterstock\Phergie\Plugin\Bigstock;
 use Phergie\Irc\Bot\React\AbstractPlugin;
 use Phergie\Irc\Bot\React\EventQueueInterface as Queue;
 use Phergie\Irc\Plugin\React\Command\CommandEvent as Event;
+use React\Promise\Deferred;
+use WyriHaximus\Phergie\Plugin\Http\Request;
 
 /**
  * Plugin class.
@@ -23,17 +25,27 @@ use Phergie\Irc\Plugin\React\Command\CommandEvent as Event;
 class Plugin extends AbstractPlugin
 {
     /**
+     * API account ID associated with your Bigstock account
+     *
+     * @var string
+     */
+    private $accountId;
+
+    /**
      * Accepts plugin configuration.
      *
      * Supported keys:
      *
-     *
+     * accountId - The API account ID associated with your Bigstock account
      *
      * @param array $config
      */
     public function __construct(array $config = [])
     {
-
+        if (empty($config['accountId'])) {
+            throw new \InvalidArgumentException("Missing required configuration key 'accountId'");
+        }
+        $this->accountId = $config['accountId'];
     }
 
     /**
@@ -50,6 +62,16 @@ class Plugin extends AbstractPlugin
     }
 
     /**
+     * Log debugging messages
+     *
+     * @param string $message
+     */
+    public function logDebug($message)
+    {
+        $this->logger->debug('[Bigstock]' . $message);
+    }
+
+    /**
      * Command to search Bigstock
      *
      * @param \Phergie\Irc\Plugin\React\Command\CommandEvent $event
@@ -61,7 +83,16 @@ class Plugin extends AbstractPlugin
         if (count($params) < 1) {
             $this->handleBigstockHelp($event, $queue);
         } else {
-            // this is where we need to fire off the request
+            $request = new Request([
+                'url' => 'http://api.bigstockphoto.com/2/' . $this->accountId . '/search/?q=' . urlencode(implode(' ', $params)),
+                'resolveCallback' =>
+                    function ($data, $headers, $code) {
+                        $this->logDebug('Bigstock response: ' . $data);
+                        // @todo something other than just logging the response
+                    },
+//                'rejectCallback' => [$deferred, 'reject']
+            ]);
+            $this->getEventEmitter()->emit('http.request', [$request]);
         }
     }
 
