@@ -1,6 +1,7 @@
 <?php
 /**
- * Phergie plugin for Use Bigstock API to search for and display images (https://github.com/shutterstock/phergie-irc-plugin-react-bigstock)
+ * Phergie plugin for Use Bigstock API to search for and display images
+ * (https://github.com/shutterstock/phergie-irc-plugin-react-bigstock)
  *
  * @link https://github.com/shutterstock/phergie-irc-plugin-react-bigstock for the canonical source repository
  * @copyright Copyright (c) 2015 Shutterstock, Inc. (http://www.bigstockphoto.com)
@@ -14,6 +15,9 @@ use Phergie\Irc\Bot\React\AbstractPlugin;
 use Phergie\Irc\Bot\React\EventQueueInterface as Queue;
 use Phergie\Irc\Client\React\LoopAwareInterface;
 use Phergie\Irc\Plugin\React\Command\CommandEvent as Event;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use React\Promise\Deferred;
 use WyriHaximus\Phergie\Plugin\Http\Request;
 use WyriHaximus\Phergie\Plugin\Url\Url;
@@ -24,7 +28,7 @@ use WyriHaximus\Phergie\Plugin\Url\Url;
  * @category Shutterstock
  * @package Shutterstock\Phergie\Plugin\Bigstock
  */
-class Plugin extends AbstractPlugin implements LoopAwareInterface
+class Plugin extends AbstractPlugin implements LoopAwareInterface, LoggerAwareInterface
 {
     /**
      * API account ID associated with your Bigstock account
@@ -39,6 +43,13 @@ class Plugin extends AbstractPlugin implements LoopAwareInterface
      * @var \React\EventLoop\LoopInterface
      */
     protected $loop;
+
+    /**
+     * Logger for any debugging output the plugin may emit
+     *
+     * @var \Psr\Log\LoggerInterface
+     */
+    protected $logger;
 
     /**
      * Maximum time to wait for URL shortener
@@ -68,6 +79,8 @@ class Plugin extends AbstractPlugin implements LoopAwareInterface
         if (isset($config['shortenTimeout'])) {
             $this->shortenTimeout = $config['shortenTimeout'];
         }
+
+        $this->logger = new NullLogger();
     }
 
     /**
@@ -78,6 +91,16 @@ class Plugin extends AbstractPlugin implements LoopAwareInterface
     public function setLoop(\React\EventLoop\LoopInterface $loop)
     {
         $this->loop = $loop;
+    }
+
+    /**
+     * Sets the logger for the plugin to use.
+     *
+     * @param \Psr\Log\LoggerInterface $logger
+     */
+    public function setLogger(LoggerInterface $logger)
+    {
+        $this->logger = $logger;
     }
 
     /**
@@ -94,15 +117,11 @@ class Plugin extends AbstractPlugin implements LoopAwareInterface
     }
 
     /**
-     * Log debugging messages
+     * Returns a configured formatter
      *
-     * @param string $message
+     * @param array $config
+     * @return Shutterstock\Phergie\Plugin\Bigstock\FormatterInterface
      */
-    public function logDebug($message)
-    {
-        $this->logger->debug('[Bigstock]' . $message);
-    }
-
     protected function getFormatter(array $config)
     {
         if (isset($config['formatter'])) {
@@ -124,44 +143,78 @@ class Plugin extends AbstractPlugin implements LoopAwareInterface
      */
     public function handleBigstockCommand(Event $event, Queue $queue)
     {
+        $this->logger->info('Bigstock plugin received a new command');
+
         $params = $event->getCustomParams();
         if (count($params) < 1) {
+            $this->logger->debug('Bigstock plugin did not detect any custom params, returning help method');
             $this->handleBigstockHelp($event, $queue);
             return;
         }
 
+        $this->logger->info('Bigstock plugin performing search with params', [
+            'params' => $params,
+        ]);
+        $search_request = "http://api.bigstockphoto.com/2/{$this->accountId}/search?";
+        $search_request .= http_build_query([
+            'q' => implode(' ', $params),
+            'limit' => 10,
+            'thumb_size' => 'large_thumb,small_thumb',
+        ]);
+
         $request = new Request([
-            'url' => 'http://api.bigstockphoto.com/2/' . $this->accountId . '/search/?q=' . urlencode(implode(' ', $params)) . '&limit=10&thumb_size=large_thumb',
+            'url' => $search_request,
             'resolveCallback' =>
                 function ($data, $headers, $code) use ($event, $queue) {
                     $data = json_decode($data, true);
+
                     if ($code !== 200) {
-                        $this->logDebug('Bigstock responded with code ' . $code . ' message :' . $data['error']['message']);
-                        foreach ($event->getTargets() as $target) {
-                            $queue->ircPrivmsg($target, "Sorry, no images found that matched your query");
-                        }
+                        $this->logger->notice('Bigstock api responded with error', [
+                            'code' => $code,
+                            'message' => $data['error']['message'],
+                        ]);
+                        $this->sendMessage(
+                            'Sorry, no images were found that matched your query',
+                            $event,
+                            $queue
+                        );
                         return;
                     }
-                    $this->logDebug('Bigstock returned ' . $data['data']['paging']['items'] . ' of ' . $data['data']['paging']['total_items']);
+
+                    $this->logger->info('Bigstock api successful return', [
+                        'items' => $data['data']['paging']['items'],
+                        'total' => $data['data']['paging']['total_items'],
+                    ]);
                     $image_key = array_rand($data['data']['images']);
                     $image = $data['data']['images'][$image_key];
                     $image['url'] = "http://www.bigstockphoto.com/image-{$image['id']}";
                     $this->emitShorteningEvents($image['url'])->then(
                         function ($shortUrl) use ($image, $event, $queue) {
                             $image['url_short'] = $shortUrl;
-                            $this->sendMessage($image, $event, $queue);
+                            $message = $this->formatter->format($image);
+                            $this->logger->info('Bigstock responding with successful url shortening', [
+                                'message' => $message,
+                            ]);
+                            $this->sendMessage($message, $event, $queue);
                         },
                         function () use ($image, $event, $queue) {
-                            $this->sendMessage($image, $event, $queue);
+                            $message = $this->formatter->format($image);
+                            $this->logger->info('Bigstock responding with failed url shortening', [
+                                'message' => $message,
+                            ]);
+                            $this->sendImageMessage($message, $event, $queue);
                         }
                     );
                 },
             'rejectCallback' =>
                 function ($data, $headers, $code) use ($event, $queue) {
-                    foreach ($event->getTargets() as $target) {
-                        $queue->ircPrivmsg($target, "Sorry, there was a problem communicating with the API");
-                    }
-                }
+                    $this->logger->notice('Bigstock api failed to respond');
+                    $this->sendMessage(
+                        'Sorry, there was a problem communicating with the API',
+                        $event,
+                        $queue
+                    );
+                },
         ]);
         $this->getEventEmitter()->emit('http.request', [$request]);
     }
@@ -211,11 +264,11 @@ class Plugin extends AbstractPlugin implements LoopAwareInterface
         $eventName = 'url.shorting.';
         if (count($this->emitter->listeners($eventName . $host)) > 0) {
             $eventName .= $host;
-            $this->logDebug('Emitting: ' . $eventName);
+            $this->logger->info('Emitting: ' . $eventName);
             $this->emitter->emit($eventName, array($url, $privateDeferred));
         } elseif (count($this->emitter->listeners($eventName . 'all')) > 0) {
             $eventName .= 'all';
-            $this->logDebug('Emitting: ' . $eventName);
+            $this->logger->info('Emitting: ' . $eventName);
             $this->emitter->emit($eventName, array($url, $privateDeferred));
         } else {
             $this->loop->addTimer(0.1, function () use ($privateDeferred) {
@@ -254,15 +307,16 @@ class Plugin extends AbstractPlugin implements LoopAwareInterface
     /**
      * Send a response
      *
-     * @param object $image
+     * @param string $message
      * @param \Phergie\Irc\Plugin\React\Command\CommandEvent $event
      * @param \Phergie\Irc\Bot\React\EventQueueInterface $queue
      */
-    public function sendMessage($image, Event $event, Queue $queue)
+    protected function sendMessage($message, Event $event, Queue $queue)
     {
-        $message = $this->formatter->format($image);
         foreach ($event->getTargets() as $target) {
-            $queue->ircPrivmsg($target, $message);
+            $queue->ircPrivmsv($target, $message);
         }
     }
+
 }
+
