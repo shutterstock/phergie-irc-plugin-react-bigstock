@@ -90,10 +90,11 @@ class Plugin extends AbstractPlugin
                         $data = json_decode($data, true);
                         if ($code !== 200) {
                             $this->logDebug('Bigstock responded with code ' . $code . ' message :' . $data['error']['message']);
-                        } else {
-                            $this->logDebug('Bigstock returned ' . $data['paging']['items'] . ' of ' . $data['paging']['total_items']);
+                            return;
                         }
-                        $image = $data['data']['images'][0];
+                        $this->logDebug('Bigstock returned ' . $data['data']['paging']['items'] . ' of ' . $data['data']['paging']['total_items']);
+                        $image_key = array_rand($data['data']['images']);
+                        $image = $data['data']['images'][$image_key];
                         $this->sendMessage($image, $event, $queue);
                     },
 //                'rejectCallback' => [$deferred, 'reject']
