@@ -11,14 +11,12 @@
 
 namespace Shutterstock\Phergie\Plugin\Bigstock;
 
-use DateTime;
-
 class DefaultFormatter implements FormatterInterface
 {
 
     protected $pattern;
 
-    protected $default_pattern = '%title% - %url% < %large_thumb% >';
+    protected $default_pattern = '%title% - %url_short% < %large_thumb% >';
 
     public function __construct($pattern = null)
     {
@@ -30,7 +28,8 @@ class DefaultFormatter implements FormatterInterface
         $replacements = [
             '%id%' => $image['id'],
             '%title%' => $image['title'],
-            '%url%' => "http://www.bigstockphoto.com/image-{$image['id']}",
+            '%url%' => $image['url'],
+            '%url_short%' => empty($image['url_short']) ? $image['url'] : $image['url_short'],
             '%small_thumb%' => $image['small_thumb']['url'],
             '%large_thumb%' => $image['large_thumb']['url'],
         ];

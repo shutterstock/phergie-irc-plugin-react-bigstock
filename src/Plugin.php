@@ -12,9 +12,11 @@ namespace Shutterstock\Phergie\Plugin\Bigstock;
 
 use Phergie\Irc\Bot\React\AbstractPlugin;
 use Phergie\Irc\Bot\React\EventQueueInterface as Queue;
+use Phergie\Irc\Client\React\LoopAwareInterface;
 use Phergie\Irc\Plugin\React\Command\CommandEvent as Event;
 use React\Promise\Deferred;
 use WyriHaximus\Phergie\Plugin\Http\Request;
+use WyriHaximus\Phergie\Plugin\Url\Url;
 
 /**
  * Plugin class.
@@ -22,7 +24,7 @@ use WyriHaximus\Phergie\Plugin\Http\Request;
  * @category Shutterstock
  * @package Shutterstock\Phergie\Plugin\Bigstock
  */
-class Plugin extends AbstractPlugin
+class Plugin extends AbstractPlugin implements LoopAwareInterface
 {
     /**
      * API account ID associated with your Bigstock account
@@ -30,6 +32,20 @@ class Plugin extends AbstractPlugin
      * @var string
      */
     private $accountId;
+
+    /**
+     * The bot's event loop
+     *
+     * @var \React\EventLoop\LoopInterface
+     */
+    protected $loop;
+
+    /**
+     * Maximum time to wait for URL shortener
+     *
+     * @var int
+     */
+    protected $shortenTimeout = 15;
 
     /**
      * Accepts plugin configuration.
@@ -48,6 +64,20 @@ class Plugin extends AbstractPlugin
         $this->accountId = $config['accountId'];
 
         $this->formatter = $this->getFormatter($config);
+
+        if (isset($config['shortenTimeout'])) {
+            $this->shortenTimeout = $config['shortenTimeout'];
+        }
+    }
+
+    /**
+     * Set the event loop (LoopAwareInterface)
+     *
+     * @param \React\EventLoop\LoopInterface $loop
+     */
+    public function setLoop(\React\EventLoop\LoopInterface $loop)
+    {
+        $this->loop = $loop;
     }
 
     /**
@@ -115,9 +145,18 @@ class Plugin extends AbstractPlugin
                     $this->logDebug('Bigstock returned ' . $data['data']['paging']['items'] . ' of ' . $data['data']['paging']['total_items']);
                     $image_key = array_rand($data['data']['images']);
                     $image = $data['data']['images'][$image_key];
-                    $this->sendMessage($image, $event, $queue);
+                    $image['url'] = "http://www.bigstockphoto.com/image-{$image['id']}";
+                    $this->emitShorteningEvents($image['url'])->then(
+                        function ($shortUrl) use ($image, $event, $queue) {
+                            $image['url_short'] = $shortUrl;
+                            $this->sendMessage($image, $event, $queue);
+                        },
+                        function () use ($image, $event, $queue) {
+                            $this->sendMessage($image, $event, $queue);
+                        }
+                    );
                 },
-            'rejectCallback' => 
+            'rejectCallback' =>
                 function ($data, $headers, $code) use ($event, $queue) {
                     foreach ($event->getTargets() as $target) {
                         $queue->ircPrivmsg($target, "Sorry, there was a problem communicating with the API");
@@ -156,6 +195,60 @@ class Plugin extends AbstractPlugin
         foreach ($messages as $message) {
             $queue->$method($target, $message);
         }
+    }
+
+    /**
+     * Emit URL shortening events
+     *
+     * @param string $url
+     * @return \React\Promise\Deferred
+     */
+    public function emitShorteningEvents($url)
+    {
+        $host = Url::extractHost($url);
+        list($privateDeferred, $userFacingPromise) = $this->preparePromises();
+
+        $eventName = 'url.shorting.';
+        if (count($this->emitter->listeners($eventName . $host)) > 0) {
+            $eventName .= $host;
+            $this->logDebug('Emitting: ' . $eventName);
+            $this->emitter->emit($eventName, array($url, $privateDeferred));
+        } elseif (count($this->emitter->listeners($eventName . 'all')) > 0) {
+            $eventName .= 'all';
+            $this->logDebug('Emitting: ' . $eventName);
+            $this->emitter->emit($eventName, array($url, $privateDeferred));
+        } else {
+            $this->loop->addTimer(0.1, function () use ($privateDeferred) {
+                $privateDeferred->reject();
+            });
+        }
+
+        return $userFacingPromise;
+    }
+
+    /**
+     * Prepare promises for URL shortening
+     *
+     * @return array
+     */
+    private function preparePromises()
+    {
+        $userFacingDeferred = new Deferred();
+        $privateDeferred = new Deferred();
+        $userFacingPromise = $userFacingDeferred->promise();
+        $privateDeferred->promise()->then(function ($shortUrl) use ($userFacingDeferred) {
+            $userFacingDeferred->resolve($shortUrl);
+        }, function () use ($userFacingDeferred) {
+            $userFacingDeferred->reject();
+        });
+        $this->loop->addTimer($this->shortenTimeout, function () use ($privateDeferred) {
+            $privateDeferred->reject();
+        });
+
+        return array(
+            $privateDeferred,
+            $userFacingPromise,
+        );
     }
 
     /**
