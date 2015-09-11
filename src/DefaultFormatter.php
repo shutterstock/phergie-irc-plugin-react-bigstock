@@ -13,7 +13,7 @@ namespace Shutterstock\Phergie\Plugin\Bigstock;
 
 use DateTime;
 
-class DefaultFormatter interface FormatterInterface
+class DefaultFormatter implements FormatterInterface
 {
 
     protected $pattern;
