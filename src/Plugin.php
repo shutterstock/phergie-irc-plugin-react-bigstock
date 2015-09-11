@@ -46,6 +46,8 @@ class Plugin extends AbstractPlugin
             throw new \InvalidArgumentException("Missing required configuration key 'accountId'");
         }
         $this->accountId = $config['accountId'];
+
+        $this->formatter = $this->getFormatter($config);
     }
 
     /**
@@ -69,6 +71,19 @@ class Plugin extends AbstractPlugin
     public function logDebug($message)
     {
         $this->logger->debug('[Bigstock]' . $message);
+    }
+
+    protected function getFormatter(array $config)
+    {
+        if (isset($config['formatter'])) {
+            if (!$config['formatter'] instanceof FormatterInterface) {
+                throw new \DomainException(
+                    '"formatter" must implement ' . __NAMESPACE__ . '\\FormatterInterface'
+                );
+            }
+            return $config['formatter'];
+        }
+        return new DefaultFormatter;
     }
 
     /**
@@ -152,7 +167,7 @@ class Plugin extends AbstractPlugin
      */
     public function sendMessage($image, Event $event, Queue $queue)
     {
-        $message = $image['large_thumb']['url'];
+        $message = $this->formatter->format($image);
         foreach ($event->getTargets() as $target) {
             $queue->ircPrivmsg($target, $message);
         }
