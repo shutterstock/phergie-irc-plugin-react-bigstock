@@ -14,7 +14,7 @@ namespace Shutterstock\Phergie\Plugin\Bigstock;
 use Phergie\Irc\Bot\React\AbstractPlugin;
 use Phergie\Irc\Bot\React\EventQueueInterface as Queue;
 use Phergie\Irc\Client\React\LoopAwareInterface;
-use Phergie\Irc\Plugin\React\Command\CommandEvent as Event;
+use Phergie\Irc\Plugin\React\Command\CommandEventInterface as Event;
 use React\Promise\Deferred;
 use WyriHaximus\Phergie\Plugin\Http\Request;
 use WyriHaximus\Phergie\Plugin\Url\Url;
@@ -109,7 +109,7 @@ class Plugin extends AbstractPlugin implements LoopAwareInterface
         if (isset($config['formatter'])) {
             if (!$config['formatter'] instanceof FormatterInterface) {
                 throw new \DomainException(
-                    '"formatter" must implement ' . __NAMESPACE__ . '\\FormatterInterface'
+                    "'formatter' must implement Shutterstock\\Phergie\\Plugin\\Bigstock\\FormatterInterface"
                 );
             }
             return $config['formatter'];
@@ -120,7 +120,7 @@ class Plugin extends AbstractPlugin implements LoopAwareInterface
     /**
      * Command to search Bigstock
      *
-     * @param \Phergie\Irc\Plugin\React\Command\CommandEvent $event
+     * @param \Phergie\Irc\Plugin\React\Command\CommandEventInterface $event
      * @param \Phergie\Irc\Bot\React\EventQueueInterface $queue
      */
     public function handleBigstockCommand(Event $event, Queue $queue)
@@ -196,7 +196,7 @@ class Plugin extends AbstractPlugin implements LoopAwareInterface
     /**
      * Bigstock Command Help
      *
-     * @param \Phergie\Irc\Plugin\React\Command\CommandEvent $event
+     * @param \Phergie\Irc\Plugin\React\Command\CommandEventInterface $event
      * @param \Phergie\Irc\Bot\React\EventQueueInterface $queue
      */
     public function handleBigstockHelp(Event $event, Queue $queue)

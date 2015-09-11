@@ -28,14 +28,14 @@ class PluginTest extends \PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        $this->event = Phake::mock('\Phergie\Irc\Event\UserEventInterface');
+        $this->event = Phake::mock('\Phergie\Irc\Plugin\React\Command\CommandEvent');
         $this->queue = Phake::mock('\Phergie\Irc\Bot\React\EventQueueInterface');
         $this->emitter = Phake::mock('\Evenement\EventEmitterInterface');
         $this->logger = Phake::mock('\Psr\Log\LoggerInterface');
         $this->plugin = $this->getPlugin();
     }
 
-    protected function getPlugin(array $config = [])
+    protected function getPlugin()
     {
         $config['accountId'] = 'ACCOUNT';
         $plugin = new Plugin($config);
@@ -44,12 +44,55 @@ class PluginTest extends \PHPUnit_Framework_TestCase
         return $plugin;
     }
 
+    public function testInvalidConfiguration()
+    {
+        try {
+            $plugin = new Plugin();
+        } catch (\InvalidArgumentException $e) {
+            $this->assertSame(
+                "Missing required configuration key 'accountId'",
+                $e->getMessage()
+            );
+        }
+
+        try {
+            $plugin = new Plugin([
+                'accountId' => 'Account',
+                'formatter' => 'Foo\Bar()',
+            ]);
+        } catch (\DomainException $e) {
+            $this->assertSame(
+                "'formatter' must implement Shutterstock\\Phergie\\Plugin\\Bigstock\\FormatterInterface",
+                $e->getMessage()
+            );
+        } 
+    }
+
     /**
      * Tests that getSubscribedEvents() returns an array.
      */
     public function testGetSubscribedEvents()
     {
         $this->assertInternalType('array', $this->plugin->getSubscribedEvents());
+    }
+
+    public function testHandleBigstockCommand()
+    {
+        Phake::when($this->event)->getCustomParams()->thenReturn(['donkey']);
+        $this->plugin->handleBigstockCommand($this->event, $this->queue);
+
+        Phake::verify($this->emitter)->emit('http.request', Phake::capture($params));
+        $this->assertInternalType('array', $params);
+        $this->assertCount(1, $params);
+        $request = reset($params);
+        $this->assertInstanceOf('\WyriHaximus\Phergie\Plugin\Http\Request', $request);
+
+        $config = $request->getConfig();
+        $this->assertInternalType('array', $config);
+        $this->assertArrayHasKey('resolveCallback', $config);
+        $this->assertInternalType('callable', $config['resolveCallback']);
+        $this->assertArrayHasKey('rejectCallback', $config);
+        $this->assertInternalType('callable', $config['rejectCallback']);
     }
 
 }
