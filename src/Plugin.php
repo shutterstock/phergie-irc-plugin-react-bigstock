@@ -53,7 +53,11 @@ class Plugin extends AbstractPlugin implements LoopAwareInterface
      *
      * Supported keys:
      *
-     * accountId - The API account ID associated with your Bigstock account
+     * accountId - REQUIRED: The API account ID associated with your Bigstock account
+     *
+     * formatter - OPTIONAL: An instance of \Shutterstock\Phergie\Plugin\Bigstock\FormatterInterface
+     *
+     * shortenTimeout - OPTIONAL: How long to wait for URL shortener before skipping it (default = 15)
      *
      * @param array $config
      */
@@ -98,7 +102,7 @@ class Plugin extends AbstractPlugin implements LoopAwareInterface
      * Returns a configured formatter
      *
      * @param array $config
-     * @return Shutterstock\Phergie\Plugin\Bigstock\FormatterInterface
+     * @return \Shutterstock\Phergie\Plugin\Bigstock\FormatterInterface
      */
     protected function getFormatter(array $config)
     {
@@ -260,6 +264,5 @@ class Plugin extends AbstractPlugin implements LoopAwareInterface
             $userFacingPromise,
         );
     }
-
 }
 
