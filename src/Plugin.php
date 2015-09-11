@@ -151,7 +151,7 @@ class Plugin extends AbstractPlugin implements LoopAwareInterface
                             'code' => $code,
                             'message' => $data['error']['message'],
                         ]);
-                        $queue->ircPrivmsv($event->getSource(), 'Sorry, no images were found that match your query');
+                        $queue->ircPrivmsg($event->getSource(), 'Sorry, no images were found that match your query');
                         return;
                     }
 
@@ -169,21 +169,21 @@ class Plugin extends AbstractPlugin implements LoopAwareInterface
                             $this->getLogger()->info('[Bigstock] responding with successful url shortening', [
                                 'message' => $message,
                             ]);
-                            $queue->ircPrivmsv($event->getSource(), $message);
+                            $queue->ircPrivmsg($event->getSource(), $message);
                         },
                         function () use ($image, $event, $queue) {
                             $message = $this->formatter->format($image);
                             $this->getLogger()->info('[Bigstock] responding with failed url shortening', [
                                 'message' => $message,
                             ]);
-                            $queue->ircPrivmsv($event->getSource(), $message);
+                            $queue->ircPrivmsg($event->getSource(), $message);
                         }
                     );
                 },
             'rejectCallback' =>
                 function ($data, $headers, $code) use ($event, $queue) {
                     $this->getLogger()->notice('[Bigstock] API failed to respond');
-                    $queue->ircPrivmsv($event->getSource(), 'Sorry, there was a problem communicating with the API');
+                    $queue->ircPrivmsg($event->getSource(), 'Sorry, there was a problem communicating with the API');
                 },
         ]);
         $this->getEventEmitter()->emit('http.request', [$request]);
@@ -203,7 +203,7 @@ class Plugin extends AbstractPlugin implements LoopAwareInterface
             'Searches Bigstock for an image based on the provided query string.',
         ];
         foreach ($messages as $message) {
-            $queue->ircPrivmsv($event->getSource(), $message);
+            $queue->ircPrivmsg($event->getSource(), $message);
         }
     }
 
