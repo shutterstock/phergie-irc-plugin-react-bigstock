@@ -18,7 +18,7 @@ class DefaultFormatter implements FormatterInterface
 
     protected $pattern;
 
-    protected $default_pattern = '%title% - %url% <%large_thumb%>';
+    protected $default_pattern = '%title% - %url% < %large_thumb% >';
 
     public function __construct($pattern = null)
     {
@@ -28,11 +28,11 @@ class DefaultFormatter implements FormatterInterface
     public function format(array $image)
     {
         $replacements = [
-            'id' => $image['id'],
-            'title' => $image['title'],
-            'url' => "http://www.bigstockphoto.com/image-{$image['id']}",
-            'small_thumb' => $image['small_thumb']['url'],
-            'large_thumb' => $image['large_thumb']['url'],
+            '%id%' => $image['id'],
+            '%title%' => $image['title'],
+            '%url%' => "http://www.bigstockphoto.com/image-{$image['id']}",
+            '%small_thumb%' => $image['small_thumb']['url'],
+            '%large_thumb%' => $image['large_thumb']['url'],
         ];
 
         $formatted = str_replace(
