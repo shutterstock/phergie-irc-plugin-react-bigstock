@@ -82,25 +82,34 @@ class Plugin extends AbstractPlugin
         $params = $event->getCustomParams();
         if (count($params) < 1) {
             $this->handleBigstockHelp($event, $queue);
-        } else {
-            $request = new Request([
-                'url' => 'http://api.bigstockphoto.com/2/' . $this->accountId . '/search/?q=' . urlencode(implode(' ', $params)) . '&limit=10&thumb_size=large_thumb',
-                'resolveCallback' =>
-                    function ($data, $headers, $code) use ($event, $queue) {
-                        $data = json_decode($data, true);
-                        if ($code !== 200) {
-                            $this->logDebug('Bigstock responded with code ' . $code . ' message :' . $data['error']['message']);
-                            return;
-                        }
-                        $this->logDebug('Bigstock returned ' . $data['data']['paging']['items'] . ' of ' . $data['data']['paging']['total_items']);
-                        $image_key = array_rand($data['data']['images']);
-                        $image = $data['data']['images'][$image_key];
-                        $this->sendMessage($image, $event, $queue);
-                    },
-//                'rejectCallback' => [$deferred, 'reject']
-            ]);
-            $this->getEventEmitter()->emit('http.request', [$request]);
+            return;
         }
+
+        $request = new Request([
+            'url' => 'http://api.bigstockphoto.com/2/' . $this->accountId . '/search/?q=' . urlencode(implode(' ', $params)) . '&limit=10&thumb_size=large_thumb',
+            'resolveCallback' =>
+                function ($data, $headers, $code) use ($event, $queue) {
+                    $data = json_decode($data, true);
+                    if ($code !== 200) {
+                        $this->logDebug('Bigstock responded with code ' . $code . ' message :' . $data['error']['message']);
+                        foreach ($event->getTargets() as $target) {
+                            $queue->ircPrivmsg($target, "Sorry, no images found that matched your query");
+                        }
+                        return;
+                    }
+                    $this->logDebug('Bigstock returned ' . $data['data']['paging']['items'] . ' of ' . $data['data']['paging']['total_items']);
+                    $image_key = array_rand($data['data']['images']);
+                    $image = $data['data']['images'][$image_key];
+                    $this->sendMessage($image, $event, $queue);
+                },
+            'rejectCallback' => 
+                function ($data, $headers, $code) use ($event, $queue) {
+                    foreach ($event->getTargets() as $target) {
+                        $queue->ircPrivmsg($target, "Sorry, there was a problem communicating with the API");
+                    }
+                }
+        ]);
+        $this->getEventEmitter()->emit('http.request', [$request]);
     }
 
     /**
