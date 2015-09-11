@@ -84,11 +84,17 @@ class Plugin extends AbstractPlugin
             $this->handleBigstockHelp($event, $queue);
         } else {
             $request = new Request([
-                'url' => 'http://api.bigstockphoto.com/2/' . $this->accountId . '/search/?q=' . urlencode(implode(' ', $params)),
+                'url' => 'http://api.bigstockphoto.com/2/' . $this->accountId . '/search/?q=' . urlencode(implode(' ', $params)) . '&limit=10&thumb_size=large_thumb',
                 'resolveCallback' =>
-                    function ($data, $headers, $code) {
-                        $this->logDebug('Bigstock response: ' . $data);
-                        // @todo something other than just logging the response
+                    function ($data, $headers, $code) use ($event, $queue) {
+                        $data = json_decode($data, true);
+                        if ($code !== 200) {
+                            $this->logDebug('Bigstock responded with code ' . $code . ' message :' . $data['error']['message']);
+                        } else {
+                            $this->logDebug('Bigstock returned ' . $data['paging']['items'] . ' of ' . $data['paging']['total_items']);
+                        }
+                        $image = $data['data']['images'][0];
+                        $this->sendMessage($image, $event, $queue);
                     },
 //                'rejectCallback' => [$deferred, 'reject']
             ]);
@@ -107,7 +113,7 @@ class Plugin extends AbstractPlugin
         $this->sendHelpReply($event, $queue, array(
             'Usage: bigstock queryString',
             'queryString - the search query (all words are assumed to be part of message)',
-            'Searches bigstock for an image based on the provided query string.',
+            'Searches Bigstock for an image based on the provided query string.',
         ));
     }
 
@@ -124,6 +130,21 @@ class Plugin extends AbstractPlugin
         $target = $event->getSource();
         foreach ($messages as $message) {
             $queue->$method($target, $message);
+        }
+    }
+
+    /**
+     * Send a response
+     *
+     * @param object $image
+     * @param \Phergie\Irc\Plugin\React\Command\CommandEvent $event
+     * @param \Phergie\Irc\Bot\React\EventQueueInterface $queue
+     */
+    public function sendMessage($image, Event $event, Queue $queue)
+    {
+        $message = $image['large_thumb']['url'];
+        foreach ($event->getTargets() as $target) {
+            $queue->ircPrivmsg($target, $message);
         }
     }
 }
