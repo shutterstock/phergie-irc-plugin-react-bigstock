@@ -15,9 +15,6 @@ use Phergie\Irc\Bot\React\AbstractPlugin;
 use Phergie\Irc\Bot\React\EventQueueInterface as Queue;
 use Phergie\Irc\Client\React\LoopAwareInterface;
 use Phergie\Irc\Plugin\React\Command\CommandEvent as Event;
-use Psr\Log\LoggerAwareInterface;
-use Psr\Log\LoggerInterface;
-use Psr\Log\NullLogger;
 use React\Promise\Deferred;
 use WyriHaximus\Phergie\Plugin\Http\Request;
 use WyriHaximus\Phergie\Plugin\Url\Url;
@@ -28,7 +25,7 @@ use WyriHaximus\Phergie\Plugin\Url\Url;
  * @category Shutterstock
  * @package Shutterstock\Phergie\Plugin\Bigstock
  */
-class Plugin extends AbstractPlugin implements LoopAwareInterface, LoggerAwareInterface
+class Plugin extends AbstractPlugin implements LoopAwareInterface
 {
     /**
      * API account ID associated with your Bigstock account
@@ -43,13 +40,6 @@ class Plugin extends AbstractPlugin implements LoopAwareInterface, LoggerAwareIn
      * @var \React\EventLoop\LoopInterface
      */
     protected $loop;
-
-    /**
-     * Logger for any debugging output the plugin may emit
-     *
-     * @var \Psr\Log\LoggerInterface
-     */
-    protected $logger;
 
     /**
      * Maximum time to wait for URL shortener
@@ -79,8 +69,6 @@ class Plugin extends AbstractPlugin implements LoopAwareInterface, LoggerAwareIn
         if (isset($config['shortenTimeout'])) {
             $this->shortenTimeout = $config['shortenTimeout'];
         }
-
-        $this->logger = new NullLogger();
     }
 
     /**
@@ -91,16 +79,6 @@ class Plugin extends AbstractPlugin implements LoopAwareInterface, LoggerAwareIn
     public function setLoop(\React\EventLoop\LoopInterface $loop)
     {
         $this->loop = $loop;
-    }
-
-    /**
-     * Sets the logger for the plugin to use.
-     *
-     * @param \Psr\Log\LoggerInterface $logger
-     */
-    public function setLogger(LoggerInterface $logger)
-    {
-        $this->logger = $logger;
     }
 
     /**
@@ -143,16 +121,16 @@ class Plugin extends AbstractPlugin implements LoopAwareInterface, LoggerAwareIn
      */
     public function handleBigstockCommand(Event $event, Queue $queue)
     {
-        $this->logger->info('Bigstock plugin received a new command');
+        $this->getLogger()->info('Bigstock plugin received a new command');
 
         $params = $event->getCustomParams();
         if (count($params) < 1) {
-            $this->logger->debug('Bigstock plugin did not detect any custom params, returning help method');
+            $this->getLogger()->debug('Bigstock plugin did not detect any custom params, returning help method');
             $this->handleBigstockHelp($event, $queue);
             return;
         }
 
-        $this->logger->info('Bigstock plugin performing search with params', [
+        $this->getLogger()->info('Bigstock plugin performing search with params', [
             'params' => $params,
         ]);
         $search_request = "http://api.bigstockphoto.com/2/{$this->accountId}/search?";
@@ -169,7 +147,7 @@ class Plugin extends AbstractPlugin implements LoopAwareInterface, LoggerAwareIn
                     $data = json_decode($data, true);
 
                     if ($code !== 200) {
-                        $this->logger->notice('Bigstock api responded with error', [
+                        $this->getLogger()->notice('Bigstock api responded with error', [
                             'code' => $code,
                             'message' => $data['error']['message'],
                         ]);
@@ -181,7 +159,7 @@ class Plugin extends AbstractPlugin implements LoopAwareInterface, LoggerAwareIn
                         return;
                     }
 
-                    $this->logger->info('Bigstock api successful return', [
+                    $this->getLogger()->info('Bigstock api successful return', [
                         'items' => $data['data']['paging']['items'],
                         'total' => $data['data']['paging']['total_items'],
                     ]);
@@ -192,14 +170,14 @@ class Plugin extends AbstractPlugin implements LoopAwareInterface, LoggerAwareIn
                         function ($shortUrl) use ($image, $event, $queue) {
                             $image['url_short'] = $shortUrl;
                             $message = $this->formatter->format($image);
-                            $this->logger->info('Bigstock responding with successful url shortening', [
+                            $this->getLogger()->info('Bigstock responding with successful url shortening', [
                                 'message' => $message,
                             ]);
                             $this->sendMessage($message, $event, $queue);
                         },
                         function () use ($image, $event, $queue) {
                             $message = $this->formatter->format($image);
-                            $this->logger->info('Bigstock responding with failed url shortening', [
+                            $this->getLogger()->info('Bigstock responding with failed url shortening', [
                                 'message' => $message,
                             ]);
                             $this->sendImageMessage($message, $event, $queue);
@@ -208,7 +186,7 @@ class Plugin extends AbstractPlugin implements LoopAwareInterface, LoggerAwareIn
                 },
             'rejectCallback' =>
                 function ($data, $headers, $code) use ($event, $queue) {
-                    $this->logger->notice('Bigstock api failed to respond');
+                    $this->getLogger()->notice('Bigstock api failed to respond');
                     $this->sendMessage(
                         'Sorry, there was a problem communicating with the API',
                         $event,
@@ -264,11 +242,11 @@ class Plugin extends AbstractPlugin implements LoopAwareInterface, LoggerAwareIn
         $eventName = 'url.shorting.';
         if (count($this->emitter->listeners($eventName . $host)) > 0) {
             $eventName .= $host;
-            $this->logger->info('Emitting: ' . $eventName);
+            $this->getLogger()->info('Emitting: ' . $eventName);
             $this->emitter->emit($eventName, array($url, $privateDeferred));
         } elseif (count($this->emitter->listeners($eventName . 'all')) > 0) {
             $eventName .= 'all';
-            $this->logger->info('Emitting: ' . $eventName);
+            $this->getLogger()->info('Emitting: ' . $eventName);
             $this->emitter->emit($eventName, array($url, $privateDeferred));
         } else {
             $this->loop->addTimer(0.1, function () use ($privateDeferred) {
