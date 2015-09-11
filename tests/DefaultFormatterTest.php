@@ -38,5 +38,50 @@ class DefaultFormatterTest extends \PHPUnit_Framework_TestCase
         );
     }
 
+    public function dataProviderFormat()
+    {
+        $image = [
+            'id' => 123,
+            'title' => 'TEST TITLE',
+            'url' => 'http://test/123',
+            'url_short' => 'http://test_short/123',
+            'small_thumb' => [
+                'url' => 'http://small_thumb/123',
+            ],
+            'large_thumb' => [
+                'url' => 'http://large_thumb/123',
+            ],
+        ];
+
+        return [
+            [
+                null,
+                $image,
+                'TEST TITLE - http://test_short/123 < http://large_thumb/123 >',
+            ],
+            [
+                '%title%, %id% || %url% (%small_thumb%)',
+                $image,
+                'TEST TITLE, 123 || http://test/123 (http://small_thumb/123)',
+            ],
+            [
+                '%title% %empty% id',
+                $image,
+                'TEST TITLE %empty% id',
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider dataProviderFormat
+     */
+    public function testFormat($format, array $image, $expected_response)
+    {
+        $formatter = new DefaultFormatter($format);
+        $response = $formatter->format($image);
+        $this->assertInternalType('string', $response);
+        $this->assertSame($expected_response, $response);
+    }
+
 }
 
