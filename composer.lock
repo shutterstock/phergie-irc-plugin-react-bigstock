@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "6c2f26c046f61ff3e1a4446be1e39179",
+    "hash": "84a3943f594930ad36257db74fb5dcef",
     "packages": [
         {
             "name": "evenement/evenement",
@@ -1178,20 +1178,21 @@
         },
         {
             "name": "phake/phake",
-            "version": "v2.0.0-beta2",
+            "version": "v2.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/mlively/Phake.git",
-                "reference": "917a5d1e426548ead7910a8cb89336cd8641eba7"
+                "reference": "20d76de0ec09f219d548752847835c256526d22d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/mlively/Phake/zipball/917a5d1e426548ead7910a8cb89336cd8641eba7",
-                "reference": "917a5d1e426548ead7910a8cb89336cd8641eba7",
+                "url": "https://api.github.com/repos/mlively/Phake/zipball/20d76de0ec09f219d548752847835c256526d22d",
+                "reference": "20d76de0ec09f219d548752847835c256526d22d",
                 "shasum": ""
             },
             "require": {
-                "php": ">=5.3.3"
+                "php": ">=5.3.3",
+                "sebastian/comparator": "~1.1"
             },
             "require-dev": {
                 "doctrine/common": "2.3.*",
@@ -1204,11 +1205,6 @@
                 "hamcrest/hamcrest-php": "Use Hamcrest matchers."
             },
             "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "2.0-dev"
-                }
-            },
             "autoload": {
                 "psr-0": {
                     "Phake": "src/"
@@ -1230,7 +1226,7 @@
                 "mock",
                 "testing"
             ],
-            "time": "2014-05-05 14:08:12"
+            "time": "2015-05-09 13:58:15"
         },
         {
             "name": "phpdocumentor/reflection-docblock",
@@ -2130,9 +2126,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "phake/phake": 10
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": [],
