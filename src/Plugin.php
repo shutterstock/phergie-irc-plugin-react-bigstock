@@ -13,7 +13,6 @@ namespace Shutterstock\Phergie\Plugin\Bigstock;
 
 use Phergie\Irc\Bot\React\AbstractPlugin;
 use Phergie\Irc\Bot\React\EventQueueInterface as Queue;
-use Phergie\Irc\Client\React\LoopAwareInterface;
 use Phergie\Irc\Plugin\React\Command\CommandEventInterface as Event;
 use React\Promise\Deferred;
 use WyriHaximus\Phergie\Plugin\Http\Request;
@@ -25,7 +24,7 @@ use WyriHaximus\Phergie\Plugin\Url\Url;
  * @category Shutterstock
  * @package Shutterstock\Phergie\Plugin\Bigstock
  */
-class Plugin extends AbstractPlugin implements LoopAwareInterface
+class Plugin extends AbstractPlugin
 {
     /**
      * API account ID associated with your Bigstock account
@@ -33,13 +32,6 @@ class Plugin extends AbstractPlugin implements LoopAwareInterface
      * @var string
      */
     private $accountId;
-
-    /**
-     * The bot's event loop
-     *
-     * @var \React\EventLoop\LoopInterface
-     */
-    protected $loop;
 
     /**
      * Maximum time to wait for URL shortener
@@ -73,16 +65,6 @@ class Plugin extends AbstractPlugin implements LoopAwareInterface
         if (isset($config['shortenTimeout'])) {
             $this->shortenTimeout = $config['shortenTimeout'];
         }
-    }
-
-    /**
-     * Set the event loop (LoopAwareInterface)
-     *
-     * @param \React\EventLoop\LoopInterface $loop
-     */
-    public function setLoop(\React\EventLoop\LoopInterface $loop)
-    {
-        $this->loop = $loop;
     }
 
     /**
@@ -226,13 +208,13 @@ class Plugin extends AbstractPlugin implements LoopAwareInterface
         if (count($this->emitter->listeners($eventName . $host)) > 0) {
             $eventName .= $host;
             $this->getLogger()->info('[Bigstock] emitting: ' . $eventName);
-            $this->emitter->emit($eventName, array($url, $privateDeferred));
+            $this->emitter->emit($eventName, [$url, $privateDeferred]);
         } elseif (count($this->emitter->listeners($eventName . 'all')) > 0) {
             $eventName .= 'all';
             $this->getLogger()->info('[Bigstock] emitting: ' . $eventName);
-            $this->emitter->emit($eventName, array($url, $privateDeferred));
+            $this->emitter->emit($eventName, [$url, $privateDeferred]);
         } else {
-            $this->loop->addTimer(0.1, function () use ($privateDeferred) {
+            $this->getLoop()->addTimer(0.1, function () use ($privateDeferred) {
                 $privateDeferred->reject();
             });
         }
@@ -255,14 +237,14 @@ class Plugin extends AbstractPlugin implements LoopAwareInterface
         }, function () use ($userFacingDeferred) {
             $userFacingDeferred->reject();
         });
-        $this->loop->addTimer($this->shortenTimeout, function () use ($privateDeferred) {
+        $this->getLoop()->addTimer($this->shortenTimeout, function () use ($privateDeferred) {
             $privateDeferred->reject();
         });
 
-        return array(
+        return [
             $privateDeferred,
             $userFacingPromise,
-        );
+        ];
     }
 }
 

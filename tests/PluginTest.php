@@ -24,7 +24,17 @@ use Shutterstock\Phergie\Plugin\Bigstock\Plugin;
  */
 class PluginTest extends \PHPUnit_Framework_TestCase
 {
+    private $event;
 
+    private $queue;
+
+    private $emitter;
+
+    private $logger;
+
+    private $loop;
+
+    private $plugin;
 
     protected function setUp()
     {
@@ -32,22 +42,40 @@ class PluginTest extends \PHPUnit_Framework_TestCase
         $this->queue = Phake::mock('\Phergie\Irc\Bot\React\EventQueueInterface');
         $this->emitter = Phake::mock('\Evenement\EventEmitterInterface');
         $this->logger = Phake::mock('\Psr\Log\LoggerInterface');
+        $this->loop = Phake::mock('\React\EventLoop\LoopInterface');
         $this->plugin = $this->getPlugin();
     }
 
     protected function getPlugin()
     {
-        $config['accountId'] = 'ACCOUNT';
+        $config = [
+            'accountId' => 'ACCOUNT'
+        ];
         $plugin = new Plugin($config);
         $plugin->setEventEmitter($this->emitter);
         $plugin->setLogger($this->logger);
+        $plugin->setLoop($this->loop);
         return $plugin;
+    }
+
+    public function testFullConfiguration()
+    {
+        $config = [
+            'accountId' => 'ACCOUNT',
+            'formatter' => new \Shutterstock\Phergie\Plugin\Bigstock\DefaultFormatter(
+                '%title% - %url_short% < %large_thumb% >'
+            ),
+            'shortenTimeout' => 15
+        ];
+        $plugin = new Plugin($config);
+        $this->assertInstanceOf('Shutterstock\Phergie\Plugin\Bigstock\Plugin', $plugin);
     }
 
     public function testInvalidConfiguration()
     {
         try {
             $plugin = new Plugin();
+            $this->fail('Plugin should throw exception if required configuration key is missing');
         } catch (\InvalidArgumentException $e) {
             $this->assertSame(
                 "Missing required configuration key 'accountId'",
@@ -60,12 +88,13 @@ class PluginTest extends \PHPUnit_Framework_TestCase
                 'accountId' => 'Account',
                 'formatter' => 'Foo\Bar()',
             ]);
+            $this->fail("Plugin should throw exception if 'formatter' is not an instance of FormatterInterface");
         } catch (\DomainException $e) {
             $this->assertSame(
                 "'formatter' must implement Shutterstock\\Phergie\\Plugin\\Bigstock\\FormatterInterface",
                 $e->getMessage()
             );
-        } 
+        }
     }
 
     /**
@@ -79,6 +108,7 @@ class PluginTest extends \PHPUnit_Framework_TestCase
     public function testHandleBigstockCommand()
     {
         Phake::when($this->event)->getCustomParams()->thenReturn(['donkey']);
+        Phake::when($this->event)->getSource()->thenReturn('#channel');
         $this->plugin->handleBigstockCommand($this->event, $this->queue);
 
         Phake::verify($this->emitter)->emit('http.request', Phake::capture($params));
@@ -95,5 +125,27 @@ class PluginTest extends \PHPUnit_Framework_TestCase
         $this->assertInternalType('callable', $config['rejectCallback']);
     }
 
+    public function testHandleBigstockCommandNoQuery()
+    {
+        Phake::when($this->event)->getCustomParams()->thenReturn([]);
+        Phake::when($this->event)->getSource()->thenReturn('#channel');
+        $this->plugin->handleBigstockCommand($this->event, $this->queue);
+
+        Phake::verify($this->queue, Phake::atLeast(1))->ircPrivmsg('#channel', $this->isType('string'));
+    }
+
+    /**
+     * Tests handleBigstockHelp().
+     */
+    public function testHandleBigstockHelp()
+    {
+        Phake::when($this->event)->getCustomParams()->thenReturn([]);
+        Phake::when($this->event)->getSource()->thenReturn('#channel');
+        Phake::when($this->event)->getCommand()->thenReturn('PRIVMSG');
+
+        $this->plugin->handleBigstockHelp($this->event, $this->queue);
+
+        Phake::verify($this->queue, Phake::atLeast(1))->ircPrivmsg('#channel', $this->isType('string'));
+    }
 }
 
