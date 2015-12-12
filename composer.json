@@ -26,7 +26,7 @@
     "require": {
         "phergie/phergie-irc-bot-react": "~1",
         "phergie/phergie-irc-plugin-react-command": "~1.0",
-        "wyrihaximus/phergie-url": "~1"
+        "phergie/phergie-irc-plugin-react-url": "~2"
 
     },
     "require-dev": {

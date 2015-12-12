@@ -15,8 +15,9 @@ use Phergie\Irc\Bot\React\AbstractPlugin;
 use Phergie\Irc\Bot\React\EventQueueInterface as Queue;
 use Phergie\Irc\Plugin\React\Command\CommandEventInterface as Event;
 use React\Promise\Deferred;
-use WyriHaximus\Phergie\Plugin\Http\Request;
-use WyriHaximus\Phergie\Plugin\Url\Url;
+use Phergie\Plugin\Http\Request;
+use Phergie\Irc\Plugin\React\Url\Url;
+use GuzzleHttp\Message\Response;
 
 /**
  * Plugin class.
@@ -129,13 +130,15 @@ class Plugin extends AbstractPlugin
         $request = new Request([
             'url' => $search_request,
             'resolveCallback' =>
-                function ($data, $headers, $code) use ($event, $queue) {
-                    $data = json_decode($data, true);
+                function (Response $response) use ($event, $queue) {
+                    $code = $response->getStatusCode();
+                    $stream = $response->getBody();
+                    $data = json_decode($stream->getContents(), true);
 
                     if ($code !== 200) {
                         $this->getLogger()->notice('[Bigstock] API responded with error', [
                             'code' => $code,
-                            'message' => $data['error']['message'],
+                            'message' => $data['message'],
                         ]);
                         $queue->ircPrivmsg($event->getSource(), 'Sorry, no images were found that match your query');
                         return;
@@ -247,4 +250,3 @@ class Plugin extends AbstractPlugin
         ];
     }
 }
-

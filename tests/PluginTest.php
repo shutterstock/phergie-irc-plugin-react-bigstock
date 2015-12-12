@@ -115,7 +115,7 @@ class PluginTest extends \PHPUnit_Framework_TestCase
         $this->assertInternalType('array', $params);
         $this->assertCount(1, $params);
         $request = reset($params);
-        $this->assertInstanceOf('\WyriHaximus\Phergie\Plugin\Http\Request', $request);
+        $this->assertInstanceOf('\Phergie\Plugin\Http\Request', $request);
 
         $config = $request->getConfig();
         $this->assertInternalType('array', $config);
@@ -148,4 +148,3 @@ class PluginTest extends \PHPUnit_Framework_TestCase
         Phake::verify($this->queue, Phake::atLeast(1))->ircPrivmsg('#channel', $this->isType('string'));
     }
 }
-
