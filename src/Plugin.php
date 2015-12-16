@@ -207,7 +207,7 @@ class Plugin extends AbstractPlugin
         $host = Url::extractHost($url);
         list($privateDeferred, $userFacingPromise) = $this->preparePromises();
 
-        $eventName = 'url.shorting.';
+        $eventName = 'url.shorten.';
         if (count($this->emitter->listeners($eventName . $host)) > 0) {
             $eventName .= $host;
             $this->getLogger()->info('[Bigstock] emitting: ' . $eventName);

@@ -29,21 +29,21 @@ return [
         // dependencies
         new \Phergie\Irc\Plugin\React\Command\Plugin, // Handles commands and routes to correct plugins
         new \Phergie\Irc\Plugin\React\CommandHelp\Plugin, // Optional - enables help messages for commands
-        new \WyriHaximus\Phergie\Plugin\Dns\Plugin, // Handles DNS lookups for the HTTP plugin
-        new \WyriHaximus\Phergie\Plugin\Http\Plugin, // Handles the HTTP requests for this plugin
-        new \WyriHaximus\Phergie\Plugin\Url\Plugin, // Helps get hostname for building url.shorting.* events
+        new \Phergie\Plugin\Dns\Plugin, // Handles DNS lookups for the HTTP plugin
+        new \Phergie\Plugin\Http\Plugin, // Handles the HTTP requests for this plugin
+        new \Phergie\Irc\Plugin\React\Url\Plugin, // Helps get hostname for building url.shorten.* events
         new \PSchwisow\Phergie\Plugin\UrlShorten\Plugin, // Optional - provides short URLs if available
-        
+
         // configuration
         new \Shutterstock\Phergie\Plugin\Bigstock\Plugin([
             // REQUIRED: The API account ID associated with your Bigstock account
             'accountId' => '123456',
-            
+
             // OPTIONAL: The formatter used for output (default value is shown)
             'formatter' => new \Shutterstock\Phergie\Plugin\Bigstock\DefaultFormatter(
                 '%title% - %url_short% < %large_thumb% >'
             )
-            
+
             // OPTIONAL: How long to wait for URL shortener before skipping it (default value is shown)
             'shortenTimeout' => 15,
         ])
