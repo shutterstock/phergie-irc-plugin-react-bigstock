@@ -24,9 +24,9 @@
         "source": "https://github.com/shutterstock/phergie-irc-plugin-react-bigstock"
     },
     "require": {
-        "phergie/phergie-irc-bot-react": "~1",
-        "phergie/phergie-irc-plugin-react-command": "~1.0",
-        "phergie/phergie-irc-plugin-react-url": "~2"
+        "phergie/phergie-irc-bot-react": "~2",
+        "phergie/phergie-irc-plugin-react-command": "~2",
+        "phergie/phergie-irc-plugin-react-url": "~3"
 
     },
     "require-dev": {
