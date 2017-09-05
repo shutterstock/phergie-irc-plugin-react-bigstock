@@ -72,4 +72,4 @@ php composer.phar install
 
 ## License
 
-Released under the BSD License. See `LICENSE`.
+[BSD-2-Clause](LICENSE) © 2015-2017 Shutterstock Images, LLC
