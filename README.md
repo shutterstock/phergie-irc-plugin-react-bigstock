@@ -1,3 +1,8 @@
+# DEPRECATED
+
+This repo is no longer publicly supported.
+
+
 # shutterstock/phergie-irc-plugin-react-bigstock
 
 [Phergie](http://github.com/phergie/phergie-irc-bot-react/) plugin to use Bigstock API to search for and display images.
